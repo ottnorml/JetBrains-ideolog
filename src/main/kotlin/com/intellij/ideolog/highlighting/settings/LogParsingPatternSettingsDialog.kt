@@ -8,7 +8,6 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.HyperlinkLabel
-import com.intellij.ui.JBIntSpinner
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
 import com.intellij.util.ui.update.MergingUpdateQueue
@@ -29,9 +28,9 @@ class LogParsingPatternSettingsDialog(private val item: LogParsingPattern) : Dia
   private var myLineStartPatternText: EditorTextField? = null
   private var myTimePatternText: EditorTextField? = null
 
-  private var myTimeColumnId: JBIntSpinner? = null
-  private var mySeverityColumnId: JBIntSpinner? = null
-  private var myCategoryColumnId: JBIntSpinner? = null
+  private var myTimeColumnIdText: EditorTextField? = null
+  private var mySeverityColumnIdText: EditorTextField? = null
+  private var myCategoryColumnIdText: EditorTextField? = null
 
   init {
     init()
@@ -97,19 +96,19 @@ class LogParsingPatternSettingsDialog(private val item: LogParsingPattern) : Dia
 
 
     panel.add(JLabel(IdeologBundle.message("time.capture.group")))
-    val timeSpinner = JBIntSpinner(item.timeColumnId + 1, 0, 100)
-    myTimeColumnId = timeSpinner
-    panel.add(timeSpinner)
+    val timeText = EditorTextField(item.getTimeGroupReference())
+    myTimeColumnIdText = timeText
+    panel.add(timeText)
 
     panel.add(JLabel(IdeologBundle.message("severity.capture.group")))
-    val severitySpinner = JBIntSpinner(item.severityColumnId + 1, 0, 100)
-    mySeverityColumnId = severitySpinner
-    panel.add(severitySpinner)
+    val severityText = EditorTextField(item.getSeverityGroupReference())
+    mySeverityColumnIdText = severityText
+    panel.add(severityText)
 
     panel.add(JLabel(IdeologBundle.message("category.capture.group")))
-    val categorySpinner = JBIntSpinner(item.categoryColumnId + 1, 0, 100)
-    myCategoryColumnId = categorySpinner
-    panel.add(categorySpinner)
+    val categoryText = EditorTextField(item.getCategoryGroupReference())
+    myCategoryColumnIdText = categoryText
+    panel.add(categoryText)
 
     return panel
   }
@@ -129,9 +128,45 @@ class LogParsingPatternSettingsDialog(private val item: LogParsingPattern) : Dia
     myLineStartPatternText?.let { item.lineStartPattern = it.text }
     myTimePatternText?.let { item.timePattern = it.text }
 
-    myTimeColumnId?.let { item.timeColumnId = it.number - 1 }
-    mySeverityColumnId?.let { item.severityColumnId = it.number - 1 }
-    myCategoryColumnId?.let { item.categoryColumnId = it.number - 1 }
+    // Handle group references - store as string if not a simple integer, otherwise update both
+    myTimeColumnIdText?.let { 
+      val text = it.text.trim()
+      val numValue = text.toIntOrNull()
+      if (numValue != null) {
+        // If it's a valid integer, update both the old and new fields for backward compatibility
+        item.timeColumnId = numValue
+        item.timeGroupRef = null // Clear the string ref when using integer
+      } else {
+        // It's a named group, store in the new field
+        item.timeGroupRef = text
+        // Keep the old field at -1 to indicate it's not used
+        item.timeColumnId = -1
+      }
+    }
+    
+    mySeverityColumnIdText?.let { 
+      val text = it.text.trim()
+      val numValue = text.toIntOrNull()
+      if (numValue != null) {
+        item.severityColumnId = numValue
+        item.severityGroupRef = null
+      } else {
+        item.severityGroupRef = text
+        item.severityColumnId = -1
+      }
+    }
+    
+    myCategoryColumnIdText?.let { 
+      val text = it.text.trim()
+      val numValue = text.toIntOrNull()
+      if (numValue != null) {
+        item.categoryColumnId = numValue
+        item.categoryGroupRef = null
+      } else {
+        item.categoryGroupRef = text
+        item.categoryColumnId = -1
+      }
+    }
 
     if (DefaultSettingsStoreItems.ParsingPatternsUUIDs.contains(item.uuid)) {
       item.uuid = UUID.randomUUID()

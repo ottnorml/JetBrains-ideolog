@@ -500,13 +500,25 @@ data class LogParsingPattern(@Attribute("enabled") var enabled: Boolean,
                              @Attribute("timeId") var timeColumnId: Int,
                              @Attribute("severityId") var severityColumnId: Int,
                              @Attribute("categoryId") var categoryColumnId: Int,
-                             @Attribute("uuid", converter = UUIDConverter::class) var uuid: UUID): Cloneable {
+                             @Attribute("uuid", converter = UUIDConverter::class) var uuid: UUID,
+                             @Attribute("timeGroupRef") var timeGroupRef: String? = null,
+                             @Attribute("severityGroupRef") var severityGroupRef: String? = null,
+                             @Attribute("categoryGroupRef") var categoryGroupRef: String? = null): Cloneable {
 
   @Suppress("unused")
-  constructor(): this(true, "", "", "", "", -1, -1, -1, UUID.randomUUID())
+  constructor(): this(true, "", "", "", "", -1, -1, -1, UUID.randomUUID(), null, null, null)
+
+  // Get the effective time group reference (use new string-based ref if available, otherwise fall back to index)
+  fun getTimeGroupReference(): String = timeGroupRef ?: timeColumnId.toString()
+  
+  // Get the effective severity group reference
+  fun getSeverityGroupReference(): String = severityGroupRef ?: severityColumnId.toString()
+  
+  // Get the effective category group reference
+  fun getCategoryGroupReference(): String = categoryGroupRef ?: categoryColumnId.toString()
 
   public override fun clone(): LogParsingPattern {
-    return LogParsingPattern(enabled, name, pattern, timePattern, lineStartPattern, timeColumnId, severityColumnId, categoryColumnId, uuid)
+    return LogParsingPattern(enabled, name, pattern, timePattern, lineStartPattern, timeColumnId, severityColumnId, categoryColumnId, uuid, timeGroupRef, severityGroupRef, categoryGroupRef)
   }
 }
 
