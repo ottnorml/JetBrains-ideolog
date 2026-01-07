@@ -35,6 +35,8 @@ jobs:
       uses: gradle/actions/setup-gradle@v4
       with:
         gradle-version: '8.5'
+        # Only write to cache from master branch, PRs use read-only
+        cache-read-only: ${{ github.ref != 'refs/heads/master' }}
       
     - name: Run unit tests
       run: ./gradlew test
