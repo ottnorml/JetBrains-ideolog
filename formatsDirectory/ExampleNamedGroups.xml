@@ -32,5 +32,5 @@
       categoryGroupRef="category" 
       uuid="23456789-2345-2345-2345-23456789abcd" />
   </parsingPatterns>
-  <settingsVersion>5</settingsVersion>
+  <settingsVersion>15</settingsVersion>
 </State>
