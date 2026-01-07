@@ -15,7 +15,8 @@ concurrency:
 # Use minimal permissions by default, grant additional permissions as needed
 permissions:
   contents: read
-  checks: write  # Required for publishing test results
+  checks: write  # Required for publishing test results as checks
+  pull-requests: write  # Required for publishing test results as PR comments
 
 jobs:
   test:
