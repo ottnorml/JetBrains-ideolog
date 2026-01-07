@@ -39,3 +39,14 @@ jobs:
       
     - name: Build with Gradle
       run: ./gradlew build -x test
+      
+    - name: Run code quality checks
+      run: ./gradlew check -x test
+      
+    - name: Upload build artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: build/libs/
+        retention-days: 7

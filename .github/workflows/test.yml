@@ -15,6 +15,7 @@ concurrency:
 # Use minimal permissions by default, grant additional permissions as needed
 permissions:
   contents: read
+  checks: write  # Required for publishing test results
 
 jobs:
   test:
@@ -38,4 +39,21 @@ jobs:
         cache-read-only: ${{ github.ref != 'refs/heads/master' }}
       
     - name: Run unit tests
-      run: ./gradlew test
+      run: ./gradlew test --continue
+      
+    - name: Publish test results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        files: '**/build/test-results/**/*.xml'
+        check_name: 'Test Results'
+        
+    - name: Upload test reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports
+        path: |
+          **/build/reports/tests/
+          **/build/test-results/
+        retention-days: 7
