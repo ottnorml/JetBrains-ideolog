@@ -34,22 +34,8 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
       with:
-        gradle-version: '8.5'
         # Only write to cache from master branch, PRs use read-only
         cache-read-only: ${{ github.ref != 'refs/heads/master' }}
       
-    - name: Verify Gradle version matches wrapper
-      run: |
-        WRAPPER_VERSION=$(grep "distributionUrl" gradle/wrapper/gradle-wrapper.properties | sed 's/.*gradle-\(.*\)-\(bin\|all\)\.zip/\1/')
-        GLOBAL_VERSION=$(gradle --version | grep "^Gradle" | awk '{print $2}')
-        echo "Wrapper version: $WRAPPER_VERSION"
-        echo "Global version: $GLOBAL_VERSION"
-        if [ "$WRAPPER_VERSION" != "$GLOBAL_VERSION" ]; then
-          echo "ERROR: Gradle version mismatch!"
-          echo "Wrapper version ($WRAPPER_VERSION) does not match global version ($GLOBAL_VERSION)"
-          exit 1
-        fi
-        echo "✓ Gradle versions match"
-      
     - name: Run unit tests
-      run: gradle test
+      run: ./gradlew test
