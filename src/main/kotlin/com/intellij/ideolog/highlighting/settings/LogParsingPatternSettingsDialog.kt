@@ -178,8 +178,12 @@ class LogParsingPatternSettingsDialog(private val item: LogParsingPattern) : Dia
   override fun doValidateAll(): MutableList<ValidationInfo> {
     val results = ArrayList<ValidationInfo>()
 
+    var patternText: String? = null
     try {
-      myParsingPatternText?.let { Pattern.compile(it.text) }
+      myParsingPatternText?.let { 
+        patternText = it.text
+        Pattern.compile(patternText)
+      }
     } catch(e : PatternSyntaxException) {
       results.add(ValidationInfo(e.localizedMessage, myParsingPatternText))
     }
@@ -194,6 +198,39 @@ class LogParsingPatternSettingsDialog(private val item: LogParsingPattern) : Dia
       myTimePatternText?.let { SimpleDateFormat(it.text) }
     } catch(e : IllegalArgumentException) {
       results.add(ValidationInfo(e.localizedMessage, myTimePatternText))
+    }
+
+    // Validate group references if pattern is valid
+    if (patternText != null && results.none { it.component == myParsingPatternText }) {
+      myTimeColumnIdText?.let { field ->
+        val ref = field.text.trim()
+        if (ref.isNotEmpty()) {
+          val resolvedIndex = com.intellij.ideolog.lex.resolveGroupReferenceToIndex(ref, patternText!!)
+          if (resolvedIndex < 0) {
+            results.add(ValidationInfo("Group reference '$ref' not found in pattern", field))
+          }
+        }
+      }
+      
+      mySeverityColumnIdText?.let { field ->
+        val ref = field.text.trim()
+        if (ref.isNotEmpty()) {
+          val resolvedIndex = com.intellij.ideolog.lex.resolveGroupReferenceToIndex(ref, patternText!!)
+          if (resolvedIndex < 0) {
+            results.add(ValidationInfo("Group reference '$ref' not found in pattern", field))
+          }
+        }
+      }
+      
+      myCategoryColumnIdText?.let { field ->
+        val ref = field.text.trim()
+        if (ref.isNotEmpty()) {
+          val resolvedIndex = com.intellij.ideolog.lex.resolveGroupReferenceToIndex(ref, patternText!!)
+          if (resolvedIndex < 0) {
+            results.add(ValidationInfo("Group reference '$ref' not found in pattern", field))
+          }
+        }
+      }
     }
 
     return results
