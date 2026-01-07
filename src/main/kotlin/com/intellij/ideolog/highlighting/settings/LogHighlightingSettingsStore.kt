@@ -344,8 +344,19 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
   init {
     // Ensure state is properly initialized on service creation
     // This is crucial for test environments where persistence may not work
-    if (myState.parsingPatterns.isEmpty()) {
+    ensureStateInitialized()
+  }
+
+  private fun ensureStateInitialized() {
+    if (myState.parsingPatterns.isEmpty() && myState.patterns.isEmpty()) {
+      // State is empty, reinitialize with defaults
       myState = upgradeState(cleanState.clone())
+    } else if (myState.parsingPatterns.isEmpty()) {
+      // Only parsing patterns are empty, add defaults
+      myState.parsingPatterns.addAll(cleanState.parsingPatterns.map { it.clone() })
+    } else if (myState.patterns.isEmpty()) {
+      // Only highlighting patterns are empty, add defaults
+      myState.patterns.addAll(cleanState.patterns.map { it.clone() })
     }
   }
 
