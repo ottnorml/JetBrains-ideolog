@@ -40,7 +40,7 @@ jobs:
       
     - name: Verify Gradle version matches wrapper
       run: |
-        WRAPPER_VERSION=$(grep "distributionUrl" gradle/wrapper/gradle-wrapper.properties | sed 's/.*gradle-\(.*\)-bin.zip/\1/')
+        WRAPPER_VERSION=$(grep "distributionUrl" gradle/wrapper/gradle-wrapper.properties | sed 's/.*gradle-\(.*\)-\(bin\|all\)\.zip/\1/')
         GLOBAL_VERSION=$(gradle --version | grep "^Gradle" | awk '{print $2}')
         echo "Wrapper version: $WRAPPER_VERSION"
         echo "Global version: $GLOBAL_VERSION"
