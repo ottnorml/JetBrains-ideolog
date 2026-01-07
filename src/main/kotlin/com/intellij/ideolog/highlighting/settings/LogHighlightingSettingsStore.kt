@@ -134,9 +134,17 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
     fun getInstance(): LogHighlightingSettingsStore {
       val instance = getService<LogHighlightingSettingsStore>()
       // Ensure the instance is properly initialized (defensive check for test environments)
-      if (instance.myState.parsingPatterns.isEmpty() || instance.myState.patterns.isEmpty()) {
-        logger.warn("Service instance has empty collections, reinitializing...")
-        instance.ensureStateInitialized()
+      try {
+        if (instance.myState.parsingPatterns.isEmpty() || instance.myState.patterns.isEmpty()) {
+          logger.warn("Service instance has empty collections, reinitializing...")
+          instance.ensureStateInitialized()
+        }
+      } catch (e: NullPointerException) {
+        logger.error("NullPointerException when checking state, forcing reinitialization", e)
+        instance.myState = State()
+        instance.myState = instance.upgradeState(instance.myState)
+      } catch (e: Exception) {
+        logger.error("Unexpected exception when checking state", e)
       }
       return instance
     }
