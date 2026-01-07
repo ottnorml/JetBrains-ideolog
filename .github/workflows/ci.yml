@@ -43,7 +43,7 @@ jobs:
       run: ./gradlew assemble check -x test
       
     - name: Upload compiled outputs
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: compiled-classes
         path: |
@@ -56,7 +56,7 @@ jobs:
         
     - name: Upload build artifacts
       if: success() || failure()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: build-artifacts
         path: build/libs/
@@ -100,7 +100,7 @@ jobs:
         
     - name: Upload test reports
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: test-reports
         path: |
