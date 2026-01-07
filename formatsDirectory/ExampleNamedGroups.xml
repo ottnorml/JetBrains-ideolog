@@ -1,0 +1,36 @@
+<State>
+  <highlightingPatterns />
+  <hiddenSubstrings />
+  <parsingPatterns>
+    <!-- Example: Apache with named groups -->
+    <LogParsingPattern 
+      enabled="true" 
+      name="Apache with Named Groups" 
+      pattern="^\[(?&lt;timestamp&gt;[\S\s]+?)\] \[(?&lt;module&gt;[\S\s]+?)\:(?&lt;level&gt;[\S\s]+?)\].*$" 
+      timePattern="EEE MMM dd HH:mm:ss.SSSSSS y" 
+      linePattern="^\[" 
+      timeId="-1" 
+      severityId="-1" 
+      categoryId="-1" 
+      timeGroupRef="timestamp" 
+      severityGroupRef="level" 
+      categoryGroupRef="module" 
+      uuid="12345678-1234-1234-1234-123456789abc" />
+    
+    <!-- Example: Pipe-separated with named groups -->
+    <LogParsingPattern 
+      enabled="true" 
+      name="Pipe-separated with Named Groups" 
+      pattern="^(?&lt;time&gt;[^|]*)\\|(?&lt;severity&gt;[^|]*)\\|(?&lt;category&gt;[^|]*)\\|(?&lt;message&gt;.*)$" 
+      timePattern="HH:mm:ss.SSS" 
+      linePattern="^\d" 
+      timeId="-1" 
+      severityId="-1" 
+      categoryId="-1" 
+      timeGroupRef="time" 
+      severityGroupRef="severity" 
+      categoryGroupRef="category" 
+      uuid="23456789-2345-2345-2345-23456789abcd" />
+  </parsingPatterns>
+  <settingsVersion>5</settingsVersion>
+</State>
