@@ -8,7 +8,6 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.HyperlinkLabel
-import com.intellij.ui.JBIntSpinner
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
 import com.intellij.util.ui.update.MergingUpdateQueue
@@ -29,9 +28,9 @@ class LogParsingPatternSettingsDialog(private val item: LogParsingPattern) : Dia
   private var myLineStartPatternText: EditorTextField? = null
   private var myTimePatternText: EditorTextField? = null
 
-  private var myTimeColumnId: JBIntSpinner? = null
-  private var mySeverityColumnId: JBIntSpinner? = null
-  private var myCategoryColumnId: JBIntSpinner? = null
+  private var myTimeColumnIdText: EditorTextField? = null
+  private var mySeverityColumnIdText: EditorTextField? = null
+  private var myCategoryColumnIdText: EditorTextField? = null
 
   init {
     init()
@@ -97,19 +96,19 @@ class LogParsingPatternSettingsDialog(private val item: LogParsingPattern) : Dia
 
 
     panel.add(JLabel(IdeologBundle.message("time.capture.group")))
-    val timeSpinner = JBIntSpinner(item.timeColumnId + 1, 0, 100)
-    myTimeColumnId = timeSpinner
-    panel.add(timeSpinner)
+    val timeText = EditorTextField(item.getTimeGroupReference())
+    myTimeColumnIdText = timeText
+    panel.add(timeText)
 
     panel.add(JLabel(IdeologBundle.message("severity.capture.group")))
-    val severitySpinner = JBIntSpinner(item.severityColumnId + 1, 0, 100)
-    mySeverityColumnId = severitySpinner
-    panel.add(severitySpinner)
+    val severityText = EditorTextField(item.getSeverityGroupReference())
+    mySeverityColumnIdText = severityText
+    panel.add(severityText)
 
     panel.add(JLabel(IdeologBundle.message("category.capture.group")))
-    val categorySpinner = JBIntSpinner(item.categoryColumnId + 1, 0, 100)
-    myCategoryColumnId = categorySpinner
-    panel.add(categorySpinner)
+    val categoryText = EditorTextField(item.getCategoryGroupReference())
+    myCategoryColumnIdText = categoryText
+    panel.add(categoryText)
 
     return panel
   }
@@ -123,15 +122,47 @@ class LogParsingPatternSettingsDialog(private val item: LogParsingPattern) : Dia
     return parsedFormat.ifBlank { "-" }
   }
 
+  /**
+   * Helper function to update group reference fields in the pattern.
+   * If the text is a valid integer, updates the old integer field and clears the string field.
+   * Otherwise, stores as a named group reference.
+   */
+  private fun updateGroupReference(
+    text: String,
+    setIntField: (Int) -> Unit,
+    setStringField: (String?) -> Unit
+  ) {
+    val trimmed = text.trim()
+    val numValue = trimmed.toIntOrNull()
+    if (numValue != null) {
+      // If it's a valid integer, update the old field for backward compatibility
+      setIntField(numValue)
+      setStringField(null) // Clear the string ref when using integer
+    } else {
+      // It's a named group, store in the new field
+      setStringField(trimmed)
+      setIntField(-1) // Keep the old field at -1 to indicate it's not used
+    }
+  }
+
   override fun doOKAction() {
     myNameText?.let { item.name = it.text }
     myParsingPatternText?.let { item.pattern = it.text }
     myLineStartPatternText?.let { item.lineStartPattern = it.text }
     myTimePatternText?.let { item.timePattern = it.text }
 
-    myTimeColumnId?.let { item.timeColumnId = it.number - 1 }
-    mySeverityColumnId?.let { item.severityColumnId = it.number - 1 }
-    myCategoryColumnId?.let { item.categoryColumnId = it.number - 1 }
+    // Handle group references
+    myTimeColumnIdText?.let { 
+      updateGroupReference(it.text, { item.timeColumnId = it }, { item.timeGroupRef = it })
+    }
+    
+    mySeverityColumnIdText?.let { 
+      updateGroupReference(it.text, { item.severityColumnId = it }, { item.severityGroupRef = it })
+    }
+    
+    myCategoryColumnIdText?.let { 
+      updateGroupReference(it.text, { item.categoryColumnId = it }, { item.categoryGroupRef = it })
+    }
 
     if (DefaultSettingsStoreItems.ParsingPatternsUUIDs.contains(item.uuid)) {
       item.uuid = UUID.randomUUID()
@@ -143,8 +174,12 @@ class LogParsingPatternSettingsDialog(private val item: LogParsingPattern) : Dia
   override fun doValidateAll(): MutableList<ValidationInfo> {
     val results = ArrayList<ValidationInfo>()
 
+    var patternText: String? = null
     try {
-      myParsingPatternText?.let { Pattern.compile(it.text) }
+      myParsingPatternText?.let { 
+        patternText = it.text
+        Pattern.compile(patternText)
+      }
     } catch(e : PatternSyntaxException) {
       results.add(ValidationInfo(e.localizedMessage, myParsingPatternText))
     }
@@ -159,6 +194,39 @@ class LogParsingPatternSettingsDialog(private val item: LogParsingPattern) : Dia
       myTimePatternText?.let { SimpleDateFormat(it.text) }
     } catch(e : IllegalArgumentException) {
       results.add(ValidationInfo(e.localizedMessage, myTimePatternText))
+    }
+
+    // Validate group references if pattern is valid
+    if (patternText != null && results.none { it.component == myParsingPatternText }) {
+      myTimeColumnIdText?.let { field ->
+        val ref = field.text.trim()
+        if (ref.isNotEmpty()) {
+          val resolvedIndex = com.intellij.ideolog.lex.resolveGroupReferenceToIndex(ref, patternText!!)
+          if (resolvedIndex < 0) {
+            results.add(ValidationInfo("Group reference '$ref' not found in pattern", field))
+          }
+        }
+      }
+      
+      mySeverityColumnIdText?.let { field ->
+        val ref = field.text.trim()
+        if (ref.isNotEmpty()) {
+          val resolvedIndex = com.intellij.ideolog.lex.resolveGroupReferenceToIndex(ref, patternText!!)
+          if (resolvedIndex < 0) {
+            results.add(ValidationInfo("Group reference '$ref' not found in pattern", field))
+          }
+        }
+      }
+      
+      myCategoryColumnIdText?.let { field ->
+        val ref = field.text.trim()
+        if (ref.isNotEmpty()) {
+          val resolvedIndex = com.intellij.ideolog.lex.resolveGroupReferenceToIndex(ref, patternText!!)
+          if (resolvedIndex < 0) {
+            results.add(ValidationInfo("Group reference '$ref' not found in pattern", field))
+          }
+        }
+      }
     }
 
     return results

@@ -134,7 +134,7 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
     fun getInstance(): LogHighlightingSettingsStore = getService<LogHighlightingSettingsStore>()
     private val logger = Logger.getInstance("LogHighlightingSettingsStore")
 
-    const val CURRENT_SETTINGS_VERSION: Int = 14
+    const val CURRENT_SETTINGS_VERSION: Int = 15
 
     private val cleanState = State()
 
@@ -288,6 +288,17 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
         }
 
         newState.version = 14
+        return@lambda newState
+      },
+      14 to lambda@ { oldState ->
+        val newState = oldState.clone()
+
+        // Version 15: Added support for named capture groups
+        // New fields (timeGroupRef, severityGroupRef, categoryGroupRef) are nullable
+        // and default to null, so existing configurations work without migration.
+        // The effective group reference falls back to the integer ID when null.
+
+        newState.version = 15
         return@lambda newState
       }
     )
@@ -500,13 +511,25 @@ data class LogParsingPattern(@Attribute("enabled") var enabled: Boolean,
                              @Attribute("timeId") var timeColumnId: Int,
                              @Attribute("severityId") var severityColumnId: Int,
                              @Attribute("categoryId") var categoryColumnId: Int,
-                             @Attribute("uuid", converter = UUIDConverter::class) var uuid: UUID): Cloneable {
+                             @Attribute("uuid", converter = UUIDConverter::class) var uuid: UUID,
+                             @Attribute("timeGroupRef") var timeGroupRef: String? = null,
+                             @Attribute("severityGroupRef") var severityGroupRef: String? = null,
+                             @Attribute("categoryGroupRef") var categoryGroupRef: String? = null): Cloneable {
 
   @Suppress("unused")
-  constructor(): this(true, "", "", "", "", -1, -1, -1, UUID.randomUUID())
+  constructor(): this(true, "", "", "", "", -1, -1, -1, UUID.randomUUID(), null, null, null)
+
+  // Get the effective time group reference (use new string-based ref if available, otherwise fall back to index)
+  fun getTimeGroupReference(): String = timeGroupRef ?: timeColumnId.toString()
+  
+  // Get the effective severity group reference
+  fun getSeverityGroupReference(): String = severityGroupRef ?: severityColumnId.toString()
+  
+  // Get the effective category group reference
+  fun getCategoryGroupReference(): String = categoryGroupRef ?: categoryColumnId.toString()
 
   public override fun clone(): LogParsingPattern {
-    return LogParsingPattern(enabled, name, pattern, timePattern, lineStartPattern, timeColumnId, severityColumnId, categoryColumnId, uuid)
+    return LogParsingPattern(enabled, name, pattern, timePattern, lineStartPattern, timeColumnId, severityColumnId, categoryColumnId, uuid, timeGroupRef, severityGroupRef, categoryGroupRef)
   }
 }
 
