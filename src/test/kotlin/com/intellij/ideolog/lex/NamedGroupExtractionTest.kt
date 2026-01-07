@@ -7,6 +7,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.regex.Pattern
 
+/**
+ * Constant indicating that a group reference is not being used
+ */
+private const val UNUSED_GROUP_ID = -1
+
 class NamedGroupExtractionTest : TestCase() {
 
   fun testExtractFieldsUsingNamedGroups() {
@@ -17,9 +22,9 @@ class NamedGroupExtractionTest : TestCase() {
       pattern = "^(?<ts>[^|]*)\\|(?<sev>[^|]*)\\|(?<cat>[^|]*)\\|(?<msg>.*)$",
       timePattern = "HH:mm:ss.SSS",
       lineStartPattern = "^\\d",
-      timeColumnId = -1,  // Not used when named groups are specified
-      severityColumnId = -1,
-      categoryColumnId = -1,
+      timeColumnId = UNUSED_GROUP_ID,  // Not used when named groups are specified
+      severityColumnId = UNUSED_GROUP_ID,
+      categoryColumnId = UNUSED_GROUP_ID,
       uuid = UUID.randomUUID(),
       timeGroupRef = "ts",
       severityGroupRef = "sev",
@@ -134,9 +139,9 @@ class NamedGroupExtractionTest : TestCase() {
       pattern = "^(?<time>[^\\[]+)(\\[[\\s\\d]+])\\s*(?<severity>\\w*)\\s*-\\s*(?<category>\\S*)\\s*-(.+)$",
       timePattern = "yyyy-MM-dd HH:mm:ss,SSS",
       lineStartPattern = "^\\d",
-      timeColumnId = -1,
-      severityColumnId = -1,
-      categoryColumnId = -1,
+      timeColumnId = UNUSED_GROUP_ID,
+      severityColumnId = UNUSED_GROUP_ID,
+      categoryColumnId = UNUSED_GROUP_ID,
       uuid = UUID.randomUUID(),
       timeGroupRef = "time",
       severityGroupRef = "severity",
@@ -173,9 +178,9 @@ class NamedGroupExtractionTest : TestCase() {
       pattern = "^(?<time>\\d+:\\d+:\\d+\\.\\d+)(\\|(?<severity>\\w+))?(\\|(?<category>\\w+))?\\|(?<message>.*)$",
       timePattern = "HH:mm:ss.SSS",
       lineStartPattern = "^\\d",
-      timeColumnId = -1,
-      severityColumnId = -1,
-      categoryColumnId = -1,
+      timeColumnId = UNUSED_GROUP_ID,
+      severityColumnId = UNUSED_GROUP_ID,
+      categoryColumnId = UNUSED_GROUP_ID,
       uuid = UUID.randomUUID(),
       timeGroupRef = "time",
       severityGroupRef = "severity",

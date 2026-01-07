@@ -16,17 +16,43 @@ data class LogToken(val startOffset: Int, var endOffset: Int, val isSeparator: B
 }
 
 /**
+ * Special marker for invalid/not found group references
+ */
+const val GROUP_NOT_FOUND = -1
+
+/**
  * Resolves a group reference (either a numeric string like "0", "1", etc. or a named group like "time") 
  * to a numeric 0-based group index by analyzing the regex pattern string.
- * Returns -1 if the group reference is invalid or not found.
  * 
- * Note: This counts ALL capturing groups in the pattern, including nested ones.
+ * This function parses the pattern string to identify all capturing groups (both numbered and named)
+ * and determines the index of the requested group reference.
+ * 
+ * @param groupRef The group reference to resolve. Can be:
+ *                 - A numeric string (e.g., "0", "1", "2") for numbered groups
+ *                 - A named group identifier (e.g., "time", "severity")
+ *                 - Empty or whitespace-only strings are considered invalid
+ * @param patternString The regex pattern string to parse. Should be a valid Java regex pattern.
+ * @return The 0-based index of the group if found, or [GROUP_NOT_FOUND] (-1) if:
+ *         - The group reference is empty or invalid
+ *         - The named group doesn't exist in the pattern
+ *         - The numeric index would be out of bounds
+ * 
+ * Note: This function counts ALL capturing groups in the pattern, including nested ones.
+ * Non-capturing groups (e.g., `(?:...)`) and lookahead/lookbehind assertions are not counted.
+ * 
+ * Example:
+ * ```
+ * resolveGroupReferenceToIndex("time", "^(?<time>\\d+):(?<level>\\w+)$") // returns 0
+ * resolveGroupReferenceToIndex("level", "^(?<time>\\d+):(?<level>\\w+)$") // returns 1
+ * resolveGroupReferenceToIndex("1", "^(\\d+):(\\w+)$") // returns 1
+ * resolveGroupReferenceToIndex("notfound", "^(\\d+):(\\w+)$") // returns -1
+ * ```
  */
 fun resolveGroupReferenceToIndex(groupRef: String, patternString: String): Int {
   // Empty or whitespace-only reference means no group
   val trimmedRef = groupRef.trim()
   if (trimmedRef.isEmpty()) {
-    return -1
+    return GROUP_NOT_FOUND
   }
   
   // Try to parse as integer first (for numeric group references)
@@ -69,8 +95,13 @@ fun resolveGroupReferenceToIndex(groupRef: String, patternString: String): Int {
                 // Named capturing group: (?<name>...)
                 val nameStart = i + 3
                 var nameEnd = nameStart
+                // Find the closing '>' of the group name, handling escapes
                 while (nameEnd < patternString.length && patternString[nameEnd] != '>') {
-                  nameEnd++
+                  if (patternString[nameEnd] == '\\' && nameEnd + 1 < patternString.length) {
+                    nameEnd += 2 // Skip escaped character
+                  } else {
+                    nameEnd++
+                  }
                 }
                 if (nameEnd < patternString.length) {
                   val groupName = patternString.substring(nameStart, nameEnd)
@@ -108,7 +139,7 @@ fun resolveGroupReferenceToIndex(groupRef: String, patternString: String): Int {
   }
   
   // Named group not found
-  return -1
+  return GROUP_NOT_FOUND
 }
 
 class RegexLogParser(val uuid: UUID, val regex: Pattern, val lineRegex: Pattern, val otherParsingSettings: LogParsingPattern, val timeFormat: DateFormat)

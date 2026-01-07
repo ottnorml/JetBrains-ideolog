@@ -60,13 +60,13 @@ class GroupReferenceResolutionTest : TestCase() {
     val pattern = "^(?<time>[^|]*)\\|(?<severity>[^|]*)\\|(.*)$"
     
     // Non-existent named group
-    assertEquals(-1, resolveGroupReferenceToIndex("nonexistent", pattern))
+    assertEquals(GROUP_NOT_FOUND, resolveGroupReferenceToIndex("nonexistent", pattern))
     
     // Empty string
-    assertEquals(-1, resolveGroupReferenceToIndex("", pattern))
+    assertEquals(GROUP_NOT_FOUND, resolveGroupReferenceToIndex("", pattern))
     
     // Whitespace only
-    assertEquals(-1, resolveGroupReferenceToIndex("   ", pattern))
+    assertEquals(GROUP_NOT_FOUND, resolveGroupReferenceToIndex("   ", pattern))
   }
 
   fun testComplexRegexWithEscapes() {

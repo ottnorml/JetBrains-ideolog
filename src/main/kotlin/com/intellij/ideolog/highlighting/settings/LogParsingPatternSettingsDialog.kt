@@ -122,50 +122,46 @@ class LogParsingPatternSettingsDialog(private val item: LogParsingPattern) : Dia
     return parsedFormat.ifBlank { "-" }
   }
 
+  /**
+   * Helper function to update group reference fields in the pattern.
+   * If the text is a valid integer, updates the old integer field and clears the string field.
+   * Otherwise, stores as a named group reference.
+   */
+  private fun updateGroupReference(
+    text: String,
+    setIntField: (Int) -> Unit,
+    setStringField: (String?) -> Unit
+  ) {
+    val trimmed = text.trim()
+    val numValue = trimmed.toIntOrNull()
+    if (numValue != null) {
+      // If it's a valid integer, update the old field for backward compatibility
+      setIntField(numValue)
+      setStringField(null) // Clear the string ref when using integer
+    } else {
+      // It's a named group, store in the new field
+      setStringField(trimmed)
+      setIntField(-1) // Keep the old field at -1 to indicate it's not used
+    }
+  }
+
   override fun doOKAction() {
     myNameText?.let { item.name = it.text }
     myParsingPatternText?.let { item.pattern = it.text }
     myLineStartPatternText?.let { item.lineStartPattern = it.text }
     myTimePatternText?.let { item.timePattern = it.text }
 
-    // Handle group references - store as string if not a simple integer, otherwise update both
+    // Handle group references
     myTimeColumnIdText?.let { 
-      val text = it.text.trim()
-      val numValue = text.toIntOrNull()
-      if (numValue != null) {
-        // If it's a valid integer, update both the old and new fields for backward compatibility
-        item.timeColumnId = numValue
-        item.timeGroupRef = null // Clear the string ref when using integer
-      } else {
-        // It's a named group, store in the new field
-        item.timeGroupRef = text
-        // Keep the old field at -1 to indicate it's not used
-        item.timeColumnId = -1
-      }
+      updateGroupReference(it.text, { item.timeColumnId = it }, { item.timeGroupRef = it })
     }
     
     mySeverityColumnIdText?.let { 
-      val text = it.text.trim()
-      val numValue = text.toIntOrNull()
-      if (numValue != null) {
-        item.severityColumnId = numValue
-        item.severityGroupRef = null
-      } else {
-        item.severityGroupRef = text
-        item.severityColumnId = -1
-      }
+      updateGroupReference(it.text, { item.severityColumnId = it }, { item.severityGroupRef = it })
     }
     
     myCategoryColumnIdText?.let { 
-      val text = it.text.trim()
-      val numValue = text.toIntOrNull()
-      if (numValue != null) {
-        item.categoryColumnId = numValue
-        item.categoryGroupRef = null
-      } else {
-        item.categoryGroupRef = text
-        item.categoryColumnId = -1
-      }
+      updateGroupReference(it.text, { item.categoryColumnId = it }, { item.categoryGroupRef = it })
     }
 
     if (DefaultSettingsStoreItems.ParsingPatternsUUIDs.contains(item.uuid)) {
