@@ -341,6 +341,14 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
   var myState: LogHighlightingSettingsStore.State = cleanState.clone()
   private val myListeners = HashSet<LogHighlightingSettingsListener>()
 
+  init {
+    // Ensure state is properly initialized on service creation
+    // This is crucial for test environments where persistence may not work
+    if (myState.parsingPatterns.isEmpty()) {
+      myState = upgradeState(cleanState.clone())
+    }
+  }
+
   @RequiresEdt
   fun addSettingsListener(disposable: Disposable, listener: LogHighlightingSettingsListener) {
     myListeners.add(listener)
@@ -377,11 +385,21 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
   }
 
   override fun loadState(state: State) {
-    XmlSerializerUtil.copyBean(state, myState)
+    val upgradedState = upgradeState(state)
+    XmlSerializerUtil.copyBean(upgradedState, myState)
+    fireListeners()
+  }
+
+  override fun noStateLoaded() {
+    // This is called when no persisted state exists (e.g., first run or in tests)
+    // Ensure myState is properly initialized with upgraded defaults
+    myState = upgradeState(cleanState.clone())
     fireListeners()
   }
 
   override fun initializeComponent() {
+    // Deprecated method but kept for compatibility
+    // The actual initialization now happens in noStateLoaded() or loadState()
     myState = upgradeState(myState)
 
     val lastAddedDefaultFormatOld = try {
