@@ -354,7 +354,7 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
     }
   }
 
-  var myState: LogHighlightingSettingsStore.State = cleanState.clone()
+  var myState: LogHighlightingSettingsStore.State = upgradeState(cleanState.clone())
   private val myListeners = HashSet<LogHighlightingSettingsListener>()
 
   init {
