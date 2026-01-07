@@ -4,6 +4,11 @@ on:
   push:
     branches: [master]
 
+# Cancel in-progress runs for the same workflow and branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # Requires write permission to submit dependency graph
 permissions:
   contents: write
