@@ -134,7 +134,7 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
     fun getInstance(): LogHighlightingSettingsStore = getService<LogHighlightingSettingsStore>()
     private val logger = Logger.getInstance("LogHighlightingSettingsStore")
 
-    const val CURRENT_SETTINGS_VERSION: Int = 14
+    const val CURRENT_SETTINGS_VERSION: Int = 15
 
     private val cleanState = State()
 
@@ -288,6 +288,17 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
         }
 
         newState.version = 14
+        return@lambda newState
+      },
+      14 to lambda@ { oldState ->
+        val newState = oldState.clone()
+
+        // Version 15: Added support for named capture groups
+        // New fields (timeGroupRef, severityGroupRef, categoryGroupRef) are nullable
+        // and default to null, so existing configurations work without migration.
+        // The effective group reference falls back to the integer ID when null.
+
+        newState.version = 15
         return@lambda newState
       }
     )
