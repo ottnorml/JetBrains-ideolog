@@ -131,7 +131,15 @@ object DefaultSettingsStoreItems {
 @State(name = "LogHighlightingSettings", storages = [Storage(value = "log_highlighting.xml", roamingType = RoamingType.DEFAULT)])
 class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSettingsStore.State>, Cloneable {
   companion object {
-    fun getInstance(): LogHighlightingSettingsStore = getService<LogHighlightingSettingsStore>()
+    fun getInstance(): LogHighlightingSettingsStore {
+      val instance = getService<LogHighlightingSettingsStore>()
+      // Ensure the instance is properly initialized (defensive check for test environments)
+      if (instance.myState.parsingPatterns.isEmpty() || instance.myState.patterns.isEmpty()) {
+        logger.warn("Service instance has empty collections, reinitializing...")
+        instance.ensureStateInitialized()
+      }
+      return instance
+    }
     private val logger = Logger.getInstance("LogHighlightingSettingsStore")
 
     const val CURRENT_SETTINGS_VERSION: Int = 14
@@ -347,7 +355,8 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
     ensureStateInitialized()
   }
 
-  private fun ensureStateInitialized() {
+  fun ensureStateInitialized() {
+    // Ensure collections are not empty
     if (myState.parsingPatterns.isEmpty() && myState.patterns.isEmpty()) {
       // State is empty, reinitialize with defaults
       myState = upgradeState(cleanState.clone())
