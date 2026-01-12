@@ -220,7 +220,8 @@ class LogHighlightingConfigurable : BaseConfigurable() {
         val fileWrapper = saver.save(VfsUtil.getUserHomeDir(), "ideologExported.xml")
 
         if (serialized != null) {
-          application!!.runWriteAction {
+          val app = application ?: return@addActionListener
+          app.runWriteAction {
             fileWrapper?.getVirtualFile(true)?.setBinaryContent(serialized.toByteArray())
           }
         }
