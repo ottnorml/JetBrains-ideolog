@@ -131,23 +131,7 @@ object DefaultSettingsStoreItems {
 @State(name = "LogHighlightingSettings", storages = [Storage(value = "log_highlighting.xml", roamingType = RoamingType.DEFAULT)])
 class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSettingsStore.State>, Cloneable {
   companion object {
-    fun getInstance(): LogHighlightingSettingsStore {
-      val instance = getService<LogHighlightingSettingsStore>()
-      // Ensure the instance is properly initialized (defensive check for test environments)
-      try {
-        if (instance.myState.parsingPatterns.isEmpty() || instance.myState.patterns.isEmpty()) {
-          logger.warn("Service instance has empty collections, reinitializing...")
-          instance.ensureStateInitialized()
-        }
-      } catch (e: NullPointerException) {
-        logger.error("NullPointerException when checking state, forcing reinitialization", e)
-        instance.myState = State()
-        instance.myState = instance.upgradeState(instance.myState)
-      } catch (e: Exception) {
-        logger.error("Unexpected exception when checking state", e)
-      }
-      return instance
-    }
+    fun getInstance(): LogHighlightingSettingsStore = getService<LogHighlightingSettingsStore>()
     private val logger = Logger.getInstance("LogHighlightingSettingsStore")
 
     const val CURRENT_SETTINGS_VERSION: Int = 14
@@ -354,28 +338,8 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
     }
   }
 
-  var myState: LogHighlightingSettingsStore.State = upgradeState(cleanState.clone())
+  var myState: LogHighlightingSettingsStore.State = cleanState.clone()
   private val myListeners = HashSet<LogHighlightingSettingsListener>()
-
-  init {
-    // Ensure state is properly initialized on service creation
-    // This is crucial for test environments where persistence may not work
-    ensureStateInitialized()
-  }
-
-  fun ensureStateInitialized() {
-    // Ensure collections are not empty
-    if (myState.parsingPatterns.isEmpty() && myState.patterns.isEmpty()) {
-      // State is empty, reinitialize with defaults
-      myState = upgradeState(cleanState.clone())
-    } else if (myState.parsingPatterns.isEmpty()) {
-      // Only parsing patterns are empty, add defaults
-      myState.parsingPatterns.addAll(cleanState.parsingPatterns.map { it.clone() })
-    } else if (myState.patterns.isEmpty()) {
-      // Only highlighting patterns are empty, add defaults
-      myState.patterns.addAll(cleanState.patterns.map { it.clone() })
-    }
-  }
 
   @RequiresEdt
   fun addSettingsListener(disposable: Disposable, listener: LogHighlightingSettingsListener) {
@@ -413,21 +377,11 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
   }
 
   override fun loadState(state: State) {
-    val upgradedState = upgradeState(state)
-    myState = upgradedState
-    fireListeners()
-  }
-
-  override fun noStateLoaded() {
-    // This is called when no persisted state exists (e.g., first run or in tests)
-    // Ensure myState is properly initialized with upgraded defaults
-    myState = upgradeState(cleanState.clone())
+    XmlSerializerUtil.copyBean(state, myState)
     fireListeners()
   }
 
   override fun initializeComponent() {
-    // Deprecated method but kept for compatibility
-    // The actual initialization now happens in noStateLoaded() or loadState()
     myState = upgradeState(myState)
 
     val lastAddedDefaultFormatOld = try {
