@@ -19,6 +19,7 @@ class ExportSettingsTest : BasePlatformTestCase() {
     }
     settingsStore.initializeComponent()
   }
+
   fun testExportParsingPattern() = doTest(parsingPatternSelectionIndices = listOf(0)) { element ->
     assertEquals(
       LogHighlightingSettingsStore.getInstance().myState.parsingPatterns.first().uuid.toString(),
