@@ -377,7 +377,8 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
   }
 
   override fun loadState(state: State) {
-    XmlSerializerUtil.copyBean(state, myState)
+    val upgradedState = upgradeState(state)
+    myState = upgradedState
     fireListeners()
   }
 
