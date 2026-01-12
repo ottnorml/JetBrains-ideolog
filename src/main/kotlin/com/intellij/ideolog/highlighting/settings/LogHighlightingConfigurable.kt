@@ -209,6 +209,8 @@ class LogHighlightingConfigurable : BaseConfigurable() {
       })
 
       addActionListener {
+        val app = application ?: return@addActionListener
+
         // Export button
         val saver = FileChooserFactory.getInstance().createSaveFileDialog(
           FileSaverDescriptor(IdeologBundle.message("dialog.title.save.xml"), "", "xml"),
@@ -220,7 +222,6 @@ class LogHighlightingConfigurable : BaseConfigurable() {
         val fileWrapper = saver.save(VfsUtil.getUserHomeDir(), "ideologExported.xml")
 
         if (serialized != null) {
-          val app = application ?: return@addActionListener
           app.runWriteAction {
             fileWrapper?.getVirtualFile(true)?.setBinaryContent(serialized.toByteArray())
           }
