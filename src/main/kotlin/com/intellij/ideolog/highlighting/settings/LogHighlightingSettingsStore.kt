@@ -338,7 +338,7 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
     }
   }
 
-  var myState: LogHighlightingSettingsStore.State = cleanState.clone()
+  var myState: LogHighlightingSettingsStore.State = upgradeState(cleanState.clone())
   private val myListeners = HashSet<LogHighlightingSettingsListener>()
 
   @RequiresEdt
@@ -377,8 +377,7 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
   }
 
   override fun loadState(state: State) {
-    val upgradedState = upgradeState(state)
-    myState = upgradedState
+    myState = upgradeState(state)
     fireListeners()
   }
 
