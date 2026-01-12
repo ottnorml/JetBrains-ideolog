@@ -3,6 +3,7 @@ package com.intellij.ideolog.highlighting
 import com.intellij.ideolog.highlighting.settings.LogHighlightingSettingsStore
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.psi.PsiFile
+import com.intellij.testFramework.ServiceContainerUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.IdeaTestExecutionPolicy
 import java.nio.file.Path
@@ -11,13 +12,13 @@ import kotlin.io.path.pathString
 class LogEditorHighlighterTest: BasePlatformTestCase() {
   override fun setUp() {
     super.setUp()
-    // Ensure the settings store service is registered and initialized
-    val app = ApplicationManager.getApplication()
-    var settingsStore = app.getService(LogHighlightingSettingsStore::class.java)
-    if (settingsStore == null) {
-      settingsStore = LogHighlightingSettingsStore()
-      app.registerService(LogHighlightingSettingsStore::class.java, settingsStore)
-    }
+    // Register and initialize the settings store service
+    val settingsStore = LogHighlightingSettingsStore()
+    ServiceContainerUtil.registerServiceInstance(
+      ApplicationManager.getApplication(),
+      LogHighlightingSettingsStore::class.java,
+      settingsStore
+    )
     settingsStore.initializeComponent()
   }
 

@@ -13,6 +13,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiFile
+import com.intellij.testFramework.ServiceContainerUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import java.text.SimpleDateFormat
 import java.util.regex.Pattern
@@ -23,13 +24,13 @@ class DefaultSettingsStoreItemsTest: BasePlatformTestCase() {
 
   override fun setUp() {
     super.setUp()
-    // Ensure the settings store service is registered and initialized
-    val app = ApplicationManager.getApplication()
-    var settingsStore = app.getService(LogHighlightingSettingsStore::class.java)
-    if (settingsStore == null) {
-      settingsStore = LogHighlightingSettingsStore()
-      app.registerService(LogHighlightingSettingsStore::class.java, settingsStore)
-    }
+    // Register and initialize the settings store service
+    val settingsStore = LogHighlightingSettingsStore()
+    ServiceContainerUtil.registerServiceInstance(
+      ApplicationManager.getApplication(),
+      LogHighlightingSettingsStore::class.java,
+      settingsStore
+    )
     settingsStore.initializeComponent()
     parsingPatternsBackup = settingsStore.myState.parsingPatterns.map { it.copy() }
   }
