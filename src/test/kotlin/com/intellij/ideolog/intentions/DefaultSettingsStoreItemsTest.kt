@@ -9,9 +9,11 @@ import com.intellij.ideolog.highlighting.settings.LogParsingPattern
 import com.intellij.ideolog.lex.LogFileFormat
 import com.intellij.ideolog.lex.RegexLogParser
 import com.intellij.ideolog.util.ideologContext
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiFile
+import com.intellij.testFramework.ServiceContainerUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import java.text.SimpleDateFormat
 import java.util.regex.Pattern
@@ -22,7 +24,15 @@ class DefaultSettingsStoreItemsTest: BasePlatformTestCase() {
 
   override fun setUp() {
     super.setUp()
-    parsingPatternsBackup = LogHighlightingSettingsStore.getInstance().myState.parsingPatterns.map { it.copy() }
+    // Register and initialize the settings store service
+    val settingsStore = LogHighlightingSettingsStore()
+    ServiceContainerUtil.registerServiceInstance(
+      ApplicationManager.getApplication(),
+      LogHighlightingSettingsStore::class.java,
+      settingsStore
+    )
+    settingsStore.initializeComponent()
+    parsingPatternsBackup = settingsStore.myState.parsingPatterns.map { it.copy() }
   }
 
   override fun tearDown() {

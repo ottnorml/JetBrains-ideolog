@@ -1,12 +1,27 @@
 package com.intellij.ideolog.highlighting
 
+import com.intellij.ideolog.highlighting.settings.LogHighlightingSettingsStore
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.psi.PsiFile
+import com.intellij.testFramework.ServiceContainerUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.IdeaTestExecutionPolicy
 import java.nio.file.Path
 import kotlin.io.path.pathString
 
 class LogEditorHighlighterTest: BasePlatformTestCase() {
+  override fun setUp() {
+    super.setUp()
+    // Register and initialize the settings store service
+    val settingsStore = LogHighlightingSettingsStore()
+    ServiceContainerUtil.registerServiceInstance(
+      ApplicationManager.getApplication(),
+      LogHighlightingSettingsStore::class.java,
+      settingsStore
+    )
+    settingsStore.initializeComponent()
+  }
+
   override fun getTestDataPath(): String {
     val platformTestDataPath = Path.of(IdeaTestExecutionPolicy.getHomePathWithPolicy(), "plugins/ideolog/src/test/resources/highlighting")
     if (platformTestDataPath.toFile().exists()) {
