@@ -8,17 +8,21 @@ import com.intellij.ideolog.filters.BlackListFilterClassProvider
 import com.intellij.ideolog.filters.PrioritizedFilter
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.impl.DocumentImpl
 import com.intellij.openapi.editor.markup.HighlighterTargetArea
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.SupervisorJob
 
 open class LogHeavyFilterService(private val project: Project, val cs: CoroutineScope): Disposable {
 
@@ -26,11 +30,17 @@ open class LogHeavyFilterService(private val project: Project, val cs: Coroutine
     fun getInstance(project: Project): LogHeavyFilterService {
       val serviceClass = DynamicLogFilterServiceClassProvider.EP_NAME.extensionList.firstOrNull()?.getFilterServiceClass()
                          ?: LogHeavyFilterService::class.java
-      return project.getService(serviceClass)
+      return runCatching { project.getService(serviceClass) }.getOrNull()
+             ?: LogHeavyFilterService(
+        project,
+        createFallbackScope(project)
+      ).also { Disposer.register(project, it) }
     }
 
     val markupHighlightedExceptionsKey: Key<HashSet<Int>> = Key.create<HashSet<Int>>("Log.ParsedExceptions")
     internal val markupHyperlinkSupportKey = Key.create<EditorHyperlinkSupport>("Log.ExceptionsHyperlinks")
+    private fun createFallbackScope(project: Project): CoroutineScope =
+      runCatching { project.service<CoroutineScope>() }.getOrElse { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
   }
 
   private val blackListedFilterClasses: Array<Class<out Filter>> by lazy {
@@ -119,5 +129,7 @@ open class LogHeavyFilterService(private val project: Project, val cs: Coroutine
     }
   }
 
-  override fun dispose() {}
+  override fun dispose() {
+    cs.cancel()
+  }
 }
