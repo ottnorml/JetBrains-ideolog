@@ -1,5 +1,6 @@
 package com.intellij.ideolog.highlighting
 
+import com.intellij.ideolog.highlighting.settings.LogHighlightingSettingsStore
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.IdeaTestExecutionPolicy
