@@ -9,18 +9,16 @@ import java.util.concurrent.atomic.AtomicBoolean
 object LogFileType : com.intellij.openapi.fileTypes.LanguageFileType(LogLanguage) {
   init {
     ensureAssociation()
+    ApplicationManager.getApplication()?.invokeLater { ensureAssociation() }
   }
   private val associationEnsured = AtomicBoolean(false)
   private fun ensureAssociation() {
-    if (associationEnsured.get()) return
-    ApplicationManager.getApplication()?.let {
-      if (associationEnsured.compareAndSet(false, true)) {
-        FileTypeManager.getInstance().associatePattern(this, "*.log")
-      }
+    val application = ApplicationManager.getApplication() ?: return
+    if (associationEnsured.compareAndSet(false, true)) {
+      FileTypeManager.getInstance().associatePattern(this, "*.log")
     }
   }
   override fun getName(): String {
-    ensureAssociation()
     return "Log"
   }
   override fun getDescription(): String = IdeologBundle.message("log.files")

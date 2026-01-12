@@ -17,6 +17,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -126,5 +127,7 @@ open class LogHeavyFilterService(private val project: Project, val cs: Coroutine
     }
   }
 
-  override fun dispose() {}
+  override fun dispose() {
+    cs.cancel()
+  }
 }

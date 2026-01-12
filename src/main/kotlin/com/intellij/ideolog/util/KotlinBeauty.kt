@@ -15,13 +15,15 @@ inline fun <reified T> getService(): T {
   check(T::class.java.packageName?.startsWith(IDEOLOG_PACKAGE_PREFIX) == true) {
     "Unsupported service lookup for ${T::class.java.name}"
   }
-  check(T::class.java.declaredConstructors.any { it.parameterCount == 0 }) {
+  val ctor = T::class.java.declaredConstructors.find { it.parameterCount == 0 }
+             ?: error("Service ${T::class.java.name} must have a no-arg constructor for test instantiation")
+  check(ctor.canAccess(null) || ctor.trySetAccessible()) {
     "Service ${T::class.java.name} must have an accessible no-arg constructor for test instantiation"
   }
 
   @Suppress("UNCHECKED_CAST")
   return testServiceCache.getOrPut(T::class.java) {
-    T::class.java.getDeclaredConstructor().newInstance()
+    ctor.newInstance()
   } as T
 }
 
