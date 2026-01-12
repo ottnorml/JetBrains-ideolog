@@ -11,6 +11,10 @@ inline fun <reified T> getService(): T {
   val service = app?.getService(T::class.java)
   if (service != null) return service
 
+  check(T::class.java.packageName?.startsWith("com.intellij.ideolog") == true) {
+    "Unsupported service lookup for ${T::class.java.name}"
+  }
+
   @Suppress("UNCHECKED_CAST")
   return testServiceCache.getOrPut(T::class.java) {
     T::class.java.getDeclaredConstructor().newInstance()

@@ -29,13 +29,8 @@ open class LogHeavyFilterService(private val project: Project, val cs: Coroutine
     fun getInstance(project: Project): LogHeavyFilterService {
       val serviceClass = DynamicLogFilterServiceClassProvider.EP_NAME.extensionList.firstOrNull()?.getFilterServiceClass()
                          ?: LogHeavyFilterService::class.java
-      return try {
-        project.getService(serviceClass)
-      }
-      catch (_: IllegalArgumentException) {
-        null
-      }
-      ?: LogHeavyFilterService(
+      return runCatching { project.getService(serviceClass) }.getOrNull()
+             ?: LogHeavyFilterService(
         project,
         runCatching { project.service<CoroutineScope>() }.getOrElse { CoroutineScope(SupervisorJob()) }
       ).also { Disposer.register(project, it) }
