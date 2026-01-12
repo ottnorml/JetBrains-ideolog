@@ -4,14 +4,19 @@ import com.intellij.ideolog.IdeologBundle
 import com.intellij.ideolog.file.LogIcons
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileTypes.FileTypeManager
+import java.util.concurrent.atomic.AtomicBoolean
 
 object LogFileType : com.intellij.openapi.fileTypes.LanguageFileType(LogLanguage) {
   init {
     ensureAssociation()
   }
+  private val associationEnsured = AtomicBoolean(false)
   private fun ensureAssociation() {
+    if (associationEnsured.get()) return
     ApplicationManager.getApplication()?.let {
-      FileTypeManager.getInstance().associatePattern(this, "*.log")
+      if (associationEnsured.compareAndSet(false, true)) {
+        FileTypeManager.getInstance().associatePattern(this, "*.log")
+      }
     }
   }
   override fun getName(): String {

@@ -32,7 +32,7 @@ open class LogHeavyFilterService(private val project: Project, val cs: Coroutine
       return runCatching { project.getService(serviceClass) }.getOrNull()
              ?: LogHeavyFilterService(
         project,
-        runCatching { project.service<CoroutineScope>() }.getOrElse { CoroutineScope(SupervisorJob()) }
+        runCatching { project.service<CoroutineScope>() }.getOrElse { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
       ).also { Disposer.register(project, it) }
     }
 
