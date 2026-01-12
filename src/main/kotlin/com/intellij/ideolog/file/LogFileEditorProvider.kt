@@ -19,8 +19,11 @@ class TotallyNotTextEditorProvider: TextEditorProvider(), DumbAware {
     return LogFileEditor(project, file, this)
   }
 
-  override fun accept(project: Project, file: VirtualFile): Boolean =
-    isTextFile(file) && (file.fileType.name == LogFileType.name || file.extension.equals(LogFileType.defaultExtension, ignoreCase = true))
+  override fun accept(project: Project, file: VirtualFile): Boolean {
+    val isLogType = file.fileType.name == LogFileType.name
+    val hasLogExtension = !isLogType && file.extension.equals(LogFileType.defaultExtension, ignoreCase = true)
+    return isTextFile(file) && (isLogType || hasLogExtension)
+  }
 
   override fun getPolicy(): FileEditorPolicy {
     return FileEditorPolicy.HIDE_DEFAULT_EDITOR

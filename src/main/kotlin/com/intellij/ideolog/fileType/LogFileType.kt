@@ -13,6 +13,7 @@ object LogFileType : com.intellij.openapi.fileTypes.LanguageFileType(LogLanguage
   }
   private val associationEnsured = AtomicBoolean(false)
   private fun ensureAssociation() {
+    if (associationEnsured.get()) return
     val application = ApplicationManager.getApplication() ?: return
     if (associationEnsured.compareAndSet(false, true)) {
       FileTypeManager.getInstance().associatePattern(this, "*.log")

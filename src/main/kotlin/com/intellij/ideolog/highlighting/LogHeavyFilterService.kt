@@ -33,12 +33,14 @@ open class LogHeavyFilterService(private val project: Project, val cs: Coroutine
       return runCatching { project.getService(serviceClass) }.getOrNull()
              ?: LogHeavyFilterService(
         project,
-        runCatching { project.service<CoroutineScope>() }.getOrElse { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
+        createFallbackScope(project)
       ).also { Disposer.register(project, it) }
     }
 
     val markupHighlightedExceptionsKey: Key<HashSet<Int>> = Key.create<HashSet<Int>>("Log.ParsedExceptions")
     internal val markupHyperlinkSupportKey = Key.create<EditorHyperlinkSupport>("Log.ExceptionsHyperlinks")
+    private fun createFallbackScope(project: Project): CoroutineScope =
+      runCatching { project.service<CoroutineScope>() }.getOrElse { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
   }
 
   private val blackListedFilterClasses: Array<Class<out Filter>> by lazy {
