@@ -10,11 +10,6 @@ import java.nio.file.Path
 import kotlin.io.path.pathString
 
 class LogEditorHighlighterTest: BasePlatformTestCase() {
-  override fun setUp() {
-    super.setUp()
-    com.intellij.ideolog.highlighting.settings.LogHighlightingSettingsStore.getInstance().initializeComponent()
-  }
-
   override fun getTestDataPath(): String =
     Path.of(IdeaTestExecutionPolicy.getHomePathWithPolicy(), "plugins/ideolog/textmate/testResources/highlighting").pathString
 

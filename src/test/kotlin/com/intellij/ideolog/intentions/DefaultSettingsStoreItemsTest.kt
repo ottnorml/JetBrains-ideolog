@@ -22,7 +22,6 @@ class DefaultSettingsStoreItemsTest: BasePlatformTestCase() {
 
   override fun setUp() {
     super.setUp()
-    LogHighlightingSettingsStore.getInstance().initializeComponent()
     parsingPatternsBackup = LogHighlightingSettingsStore.getInstance().myState.parsingPatterns.map { it.copy() }
   }
 
