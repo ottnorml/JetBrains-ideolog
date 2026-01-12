@@ -18,6 +18,7 @@ class ImportSettingsTest : BasePlatformTestCase() {
 
   override fun setUp() {
     super.setUp()
+    LogHighlightingSettingsStore.getInstance().initializeComponent()
     parsingPatternsBackup = LogHighlightingSettingsStore.getInstance().myState.parsingPatterns.map { it.copy() }
     highlightingPatternsBackup = LogHighlightingSettingsStore.getInstance().myState.patterns.map { it.copy() }
   }

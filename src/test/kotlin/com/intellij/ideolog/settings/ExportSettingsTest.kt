@@ -7,6 +7,11 @@ import com.intellij.util.ui.JBUI
 import org.jdom.Element
 
 class ExportSettingsTest : BasePlatformTestCase() {
+  override fun setUp() {
+    super.setUp()
+    LogHighlightingSettingsStore.getInstance().initializeComponent()
+  }
+
   fun testExportParsingPattern() = doTest(parsingPatternSelectionIndices = listOf(0)) { element ->
     assertEquals(
       LogHighlightingSettingsStore.getInstance().myState.parsingPatterns.first().uuid.toString(),

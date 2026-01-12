@@ -7,6 +7,11 @@ import java.nio.file.Path
 import kotlin.io.path.pathString
 
 class LogEditorHighlighterTest: BasePlatformTestCase() {
+  override fun setUp() {
+    super.setUp()
+    LogHighlightingSettingsStore.getInstance().initializeComponent()
+  }
+
   override fun getTestDataPath(): String {
     val platformTestDataPath = Path.of(IdeaTestExecutionPolicy.getHomePathWithPolicy(), "plugins/ideolog/src/test/resources/highlighting")
     if (platformTestDataPath.toFile().exists()) {
