@@ -1,12 +1,24 @@
 package com.intellij.ideolog.settings
 
 import com.intellij.ideolog.highlighting.settings.*
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
 import org.jdom.Element
 
 class ExportSettingsTest : BasePlatformTestCase() {
+  override fun setUp() {
+    super.setUp()
+    // Ensure the settings store service is registered and initialized
+    val app = ApplicationManager.getApplication()
+    var settingsStore = app.getService(LogHighlightingSettingsStore::class.java)
+    if (settingsStore == null) {
+      settingsStore = LogHighlightingSettingsStore()
+      app.registerService(LogHighlightingSettingsStore::class.java, settingsStore)
+    }
+    settingsStore.initializeComponent()
+  }
   fun testExportParsingPattern() = doTest(parsingPatternSelectionIndices = listOf(0)) { element ->
     assertEquals(
       LogHighlightingSettingsStore.getInstance().myState.parsingPatterns.first().uuid.toString(),

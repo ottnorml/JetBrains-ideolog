@@ -2,6 +2,8 @@ package com.intellij.ideolog.textmate.highlighting
 
 import com.intellij.ideolog.highlighting.CUSTOM_DEFAULT_LOG_HIGHLIGHTER_SIZE_CONSTRAINT
 import com.intellij.ideolog.highlighting.LogEditorHighlighter
+import com.intellij.ideolog.highlighting.settings.LogHighlightingSettingsStore
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.ex.util.LexerEditorHighlighter
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
@@ -10,6 +12,18 @@ import java.nio.file.Path
 import kotlin.io.path.pathString
 
 class LogEditorHighlighterTest: BasePlatformTestCase() {
+  override fun setUp() {
+    super.setUp()
+    // Ensure the settings store service is registered and initialized
+    val app = ApplicationManager.getApplication()
+    var settingsStore = app.getService(LogHighlightingSettingsStore::class.java)
+    if (settingsStore == null) {
+      settingsStore = LogHighlightingSettingsStore()
+      app.registerService(LogHighlightingSettingsStore::class.java, settingsStore)
+    }
+    settingsStore.initializeComponent()
+  }
+
   override fun getTestDataPath(): String =
     Path.of(IdeaTestExecutionPolicy.getHomePathWithPolicy(), "plugins/ideolog/textmate/testResources/highlighting").pathString
 
