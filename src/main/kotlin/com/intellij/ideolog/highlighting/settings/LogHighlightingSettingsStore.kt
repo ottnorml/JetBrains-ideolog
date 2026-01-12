@@ -475,9 +475,9 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
     @XCollection(style = XCollection.Style.v2)
     @Tag("highlightingPatterns")
     val patterns: ArrayList<LogHighlightingPattern> = arrayListOf(
-      DefaultSettingsStoreItems.Error,
-      DefaultSettingsStoreItems.Warning,
-      DefaultSettingsStoreItems.Info
+      DefaultSettingsStoreItems.Error.clone(),
+      DefaultSettingsStoreItems.Warning.clone(),
+      DefaultSettingsStoreItems.Info.clone()
     ),
     @XCollection(style = XCollection.Style.v2)
     @Tag("hiddenSubstrings")
@@ -485,11 +485,11 @@ class LogHighlightingSettingsStore : PersistentStateComponent<LogHighlightingSet
     @XCollection(style = XCollection.Style.v2)
     @Tag("parsingPatterns")
     val parsingPatterns: ArrayList<LogParsingPattern> = arrayListOf(
-      DefaultSettingsStoreItems.PipeSeparated,
-      DefaultSettingsStoreItems.IntelliJIDEA,
-      DefaultSettingsStoreItems.TeamCityBuildLog,
-      DefaultSettingsStoreItems.Loguru,
-      DefaultSettingsStoreItems.Logcat,
+      DefaultSettingsStoreItems.PipeSeparated.clone(),
+      DefaultSettingsStoreItems.IntelliJIDEA.clone(),
+      DefaultSettingsStoreItems.TeamCityBuildLog.clone(),
+      DefaultSettingsStoreItems.Loguru.clone(),
+      DefaultSettingsStoreItems.Logcat.clone(),
     ),
     @Tag("settingsVersion")
     @Property(alwaysWrite = true)
