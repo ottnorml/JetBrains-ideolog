@@ -4,9 +4,12 @@ import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import java.util.concurrent.ConcurrentHashMap
 
-private val testServiceCache = ConcurrentHashMap<Class<*>, Any>()
-private const val IDEOLOG_PACKAGE_PREFIX = "com.intellij.ideolog"
-private val allowedTestServices = setOf(
+@PublishedApi
+internal val testServiceCache = ConcurrentHashMap<Class<*>, Any>()
+@PublishedApi
+internal const val IDEOLOG_PACKAGE_PREFIX = "com.intellij.ideolog"
+@PublishedApi
+internal val allowedTestServices = setOf(
   "com.intellij.ideolog.highlighting.settings.LogHighlightingSettingsStore"
 )
 
