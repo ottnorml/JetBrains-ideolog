@@ -6,7 +6,7 @@ plugins {
   id("idea")
   id("org.jetbrains.kotlin.jvm") version "2.1.20"
   id("org.jetbrains.kotlin.plugin.serialization") version "2.1.20"
-  id("org.jetbrains.intellij.platform") version "2.5.0"
+  id("org.jetbrains.intellij.platform") version "2.11.0"
 }
 
 group = "ideolog"
